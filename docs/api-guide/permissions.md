@@ -71,7 +71,7 @@ If not specified, this setting defaults to allowing unrestricted access:
     )
 
 You can also set the authentication policy on a per-view, or per-viewset basis,
-using the `APIView` class based views.
+using the `APIView` class-based views.
 
     from rest_framework.permissions import IsAuthenticated
     from rest_framework.response import Response
@@ -92,7 +92,7 @@ Or, if you're using the `@api_view` decorator with function based views.
     from rest_framework.permissions import IsAuthenticated
     from rest_framework.response import Response
 
-    @api_view('GET')
+    @api_view(['GET'])
     @permission_classes((IsAuthenticated, ))
     def example_view(request, format=None):
         content = {
@@ -132,7 +132,7 @@ This permission is suitable if you want to your API to allow read permissions to
 
 ## DjangoModelPermissions
 
-This permission class ties into Django's standard `django.contrib.auth` [model permissions][contribauth].  This permission must only be applied to views that has a `.queryset` property set. Authorization will only be granted if the user *is authenticated* and has the *relevant model permissions* assigned.
+This permission class ties into Django's standard `django.contrib.auth` [model permissions][contribauth].  This permission must only be applied to views that have a `.queryset` property set. Authorization will only be granted if the user *is authenticated* and has the *relevant model permissions* assigned.
 
 * `POST` requests require the user to have the `add` permission on the model.
 * `PUT` and `PATCH` requests require the user to have the `change` permission on the model.
@@ -144,7 +144,7 @@ To use custom model permissions, override `DjangoModelPermissions` and set the `
 
 #### Using with views that do not include a `queryset` attribute.
 
-If you're using this permission with a view that uses an overridden `get_queryset()` method there may not be a `queryset` attribute on the view. In this case we suggest also marking the view with a sential queryset, so that this class can determine the required permissions. For example:
+If you're using this permission with a view that uses an overridden `get_queryset()` method there may not be a `queryset` attribute on the view. In this case we suggest also marking the view with a sentinel queryset, so that this class can determine the required permissions. For example:
 
     queryset = User.objects.none()  # Required for DjangoModelPermissions
 
@@ -261,6 +261,10 @@ The [REST Condition][rest-condition] package is another extension for building c
 
 The [DRY Rest Permissions][dry-rest-permissions] package provides the ability to define different permissions for individual default and custom actions. This package is made for apps with permissions that are derived from relationships defined in the app's data model. It also supports permission checks being returned to a client app through the API's serializer. Additionally it supports adding permissions to the default and custom list actions to restrict the data they retrive per user.
 
+## Django Rest Framework Roles
+
+The [Django Rest Framework Roles][django-rest-framework-roles] package makes it easier to parameterize your API over multiple types of users.
+
 [cite]: https://developer.apple.com/library/mac/#documentation/security/Conceptual/AuthenticationAndAuthorizationGuide/Authorization/Authorization.html
 [authentication]: authentication.md
 [throttling]: throttling.md
@@ -275,3 +279,4 @@ The [DRY Rest Permissions][dry-rest-permissions] package provides the ability to
 [composed-permissions]: https://github.com/niwibe/djangorestframework-composed-permissions
 [rest-condition]: https://github.com/caxap/rest_condition
 [dry-rest-permissions]: https://github.com/Helioscene/dry-rest-permissions
+[django-rest-framework-roles]: https://github.com/computer-lab/django-rest-framework-roles

@@ -442,7 +442,7 @@ Declaring a `ModelSerializer` looks like this:
 
 By default, all the model fields on the class will be mapped to a corresponding serializer fields.
 
-Any relationships such as foreign keys on the model will be mapped to `PrimaryKeyRelatedField`. Reverse relationships are not included by default unless explicitly included as described below.
+Any relationships such as foreign keys on the model will be mapped to `PrimaryKeyRelatedField`. Reverse relationships are not included by default unless explicitly included as specified in the [serializer relations][relations] documentation.
 
 #### Inspecting a `ModelSerializer`
 
@@ -452,7 +452,7 @@ To do so, open the Django shell, using `python manage.py shell`, then import the
 
     >>> from myapp.serializers import AccountSerializer
     >>> serializer = AccountSerializer()
-    >>> print repr(serializer)  # Or `print(repr(serializer))` in Python 3.x.
+    >>> print(repr(serializer))
     AccountSerializer():
         id = IntegerField(label='ID', read_only=True)
         name = CharField(allow_blank=True, max_length=100, required=False)
@@ -678,6 +678,25 @@ You can explicitly include the primary key by adding it to the `fields` option, 
             model = Account
             fields = ('url', 'id', 'account_name', 'users', 'created')
 
+## Absolute and relative URLs
+
+When instantiating a `HyperlinkedModelSerializer` you must include the current
+`request` in the serializer context, for example:
+
+    serializer = AccountSerializer(queryset, context={'request': request})
+
+Doing so will ensure that the hyperlinks can include an appropriate hostname,
+so that the resulting representation uses fully qualified URLs, such as:
+
+    http://api.example.com/accounts/1/
+
+Rather than relative URLs, such as:
+
+    /accounts/1/
+
+If you *do* want to use relative URLs, you should explicitly pass `{'request': None}`
+in the serializer context.
+
 ## How hyperlinked views are determined
 
 There needs to be a way of determining which views should be used for hyperlinking to model instances.
@@ -731,9 +750,17 @@ The `ListSerializer` class provides the behavior for serializing and validating 
 
 When a serializer is instantiated and `many=True` is passed, a `ListSerializer` instance will be created. The serializer class then becomes a child of the parent `ListSerializer`
 
+The following argument can also be passed to a `ListSerializer` field or a serializer that is passed `many=True`:
+
+### `allow_empty`
+
+This is `True` by default, but can be set to `False` if you want to disallow empty lists as valid input.
+
+### Customizing `ListSerializer` behavior
+
 There *are* a few use cases when you might want to customize the `ListSerializer` behavior. For example:
 
-* You want to provide particular validation of the lists, such as always ensuring that there is at least one element in a list.
+* You want to provide particular validation of the lists, such as checking that one element does not conflict with another element in a list.
 * You want to customize the create or update behavior of multiple objects.
 
 For these cases you can modify the class that is used when `many=True` is passed, by using the `list_serializer_class` option on the serializer `Meta` class.
@@ -849,7 +876,7 @@ There are four methods that can be overridden, depending on what functionality y
 * `.to_internal_value()` - Override this to support deserialization, for write operations.
 * `.create()` and `.update()` - Override either or both of these to support saving instances.
 
-Because this class provides the same interface as the `Serializer` class, you can use it with the existing generic class based views exactly as you would for a regular `Serializer` or `ModelSerializer`.
+Because this class provides the same interface as the `Serializer` class, you can use it with the existing generic class-based views exactly as you would for a regular `Serializer` or `ModelSerializer`.
 
 The only difference you'll notice when doing so is the `BaseSerializer` classes will not generate HTML forms in the browsable API. This is because the data they return does not include all the field information that would allow each field to be rendered into a suitable HTML input.
 
@@ -1062,6 +1089,7 @@ The following third party packages are also available.
 The [django-rest-marshmallow][django-rest-marshmallow] package provides an alternative implementation for serializers, using the python [marshmallow][marshmallow] library. It exposes the same API as the REST framework serializers, and can be used as a drop-in replacement in some use-cases.
 
 ## Serpy
+
 The [serpy][serpy] package is an alternative implementation for serializers that is built for speed. [Serpy][serpy] serializes complex datatypes to simple native types. The native types can be easily converted to JSON or any other format needed.
 
 ## MongoengineModelSerializer
@@ -1076,14 +1104,30 @@ The [django-rest-framework-gis][django-rest-framework-gis] package provides a `G
 
 The [django-rest-framework-hstore][django-rest-framework-hstore] package provides an `HStoreSerializer` to support [django-hstore][django-hstore] `DictionaryField` model field and its `schema-mode` feature.
 
+## Dynamic REST
+
+The [dynamic-rest][dynamic-rest] package extends the ModelSerializer and ModelViewSet interfaces, adding API query parameters for filtering, sorting, and including / excluding all fields and relationships defined by your serializers.
+
+## Dynamic Fields Mixin
+
+The [drf-dynamic-fields][drf-dynamic-fields] package provides a mixin to dynamically limit the fields per serializer to a subset specified by an URL parameter.
+
+## HTML JSON Forms
+
+The [html-json-forms][html-json-forms] package provides an algorithm and serializer for processing `<form>` submissions per the (inactive) [HTML JSON Form specification][json-form-spec].  The serializer facilitates processing of arbitrarily nested JSON structures within HTML.  For example, `<input name="items[0][id]" value="5">` will be interpreted as `{"items": [{"id": "5"}]}`.
+
 [cite]: https://groups.google.com/d/topic/django-users/sVFaOfQi4wY/discussion
 [relations]: relations.md
 [model-managers]: https://docs.djangoproject.com/en/dev/topics/db/managers/
 [encapsulation-blogpost]: http://www.dabapps.com/blog/django-models-and-encapsulation/
 [django-rest-marshmallow]: http://tomchristie.github.io/django-rest-marshmallow/
-[marshmallow]: https://marshmallow.readthedocs.org/en/latest/
+[marshmallow]: https://marshmallow.readthedocs.io/en/latest/
 [serpy]: https://github.com/clarkduvall/serpy
 [mongoengine]: https://github.com/umutbozkurt/django-rest-framework-mongoengine
 [django-rest-framework-gis]: https://github.com/djangonauts/django-rest-framework-gis
 [django-rest-framework-hstore]: https://github.com/djangonauts/django-rest-framework-hstore
 [django-hstore]: https://github.com/djangonauts/django-hstore
+[dynamic-rest]: https://github.com/AltSchool/dynamic-rest
+[html-json-forms]: https://github.com/wq/html-json-forms
+[json-form-spec]: https://www.w3.org/TR/html-json-forms/
+[drf-dynamic-fields]: https://github.com/dbrgn/drf-dynamic-fields

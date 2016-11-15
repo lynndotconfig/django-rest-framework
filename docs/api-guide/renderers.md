@@ -28,7 +28,7 @@ The default set of renderers may be set globally, using the `DEFAULT_RENDERER_CL
     }
 
 You can also set the renderers used for an individual view, or viewset,
-using the `APIView` class based views.
+using the `APIView` class-based views.
 
     from django.contrib.auth.models import User
     from rest_framework.renderers import JSONRenderer
@@ -471,6 +471,10 @@ Comma-separated values are a plain-text tabular data format, that can be easily 
 
 [Django REST Pandas] provides a serializer and renderers that support additional data processing and output via the [Pandas] DataFrame API.  Django REST Pandas includes renderers for Pandas-style CSV files, Excel workbooks (both `.xls` and `.xlsx`), and a number of [other formats]. It is maintained by [S. Andrew Sheppard][sheppard] as part of the [wq Project][wq].
 
+## LaTeX
+
+[Rest Framework Latex] provides a renderer that outputs PDFs using Laulatex. It is maintained by [Pebble (S/F Software)][mypebble].
+
 
 [cite]: https://docs.djangoproject.com/en/dev/ref/template-response/#the-rendering-process
 [conneg]: content-negotiation.md
@@ -506,3 +510,5 @@ Comma-separated values are a plain-text tabular data format, that can be easily 
 [other formats]: https://github.com/wq/django-rest-pandas#supported-formats
 [sheppard]: https://github.com/sheppard
 [wq]: https://github.com/wq
+[mypebble]: https://github.com/mypebble
+[Rest Framework Latex]: https://github.com/mypebble/rest-framework-latex

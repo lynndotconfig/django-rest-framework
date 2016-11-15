@@ -3,14 +3,11 @@
 from __future__ import unicode_literals
 
 from django.test import TestCase
-from django.utils.encoding import python_2_unicode_compatible, smart_text
+from django.utils.encoding import python_2_unicode_compatible
 
 from rest_framework.compat import apply_markdown
+from rest_framework.utils.formatting import dedent
 from rest_framework.views import APIView
-
-from .description import (
-    UTF8_TEST_DOCSTRING, ViewWithNonASCIICharactersInDocstring
-)
 
 
 # We check that docstrings get nicely un-indented.
@@ -85,16 +82,6 @@ class TestViewNamesAndDescriptions(TestCase):
 
         self.assertEqual(MockView().get_view_description(), DESCRIPTION)
 
-    def test_view_description_supports_unicode(self):
-        """
-        Unicode in docstrings should be respected.
-        """
-
-        self.assertEqual(
-            ViewWithNonASCIICharactersInDocstring().get_view_description(),
-            smart_text(UTF8_TEST_DOCSTRING)
-        )
-
     def test_view_description_can_be_empty(self):
         """
         Ensure that if a view has no docstring,
@@ -134,3 +121,7 @@ class TestViewNamesAndDescriptions(TestCase):
             gte_21_match = apply_markdown(DESCRIPTION) == MARKED_DOWN_gte_21
             lt_21_match = apply_markdown(DESCRIPTION) == MARKED_DOWN_lt_21
             self.assertTrue(gte_21_match or lt_21_match)
+
+
+def test_dedent_tabs():
+    assert dedent("\tfirst string\n\n\tsecond string") == 'first string\n\n\tsecond string'

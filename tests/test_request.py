@@ -7,11 +7,13 @@ from django.conf.urls import url
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.sessions.middleware import SessionMiddleware
-from django.test import TestCase
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase, override_settings
 from django.utils import six
 
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication
+from rest_framework.compat import is_anonymous
 from rest_framework.parsers import BaseParser, FormParser, MultiPartParser
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -78,6 +80,16 @@ class TestContentParsing(TestCase):
         request.parsers = (FormParser(), MultiPartParser())
         self.assertEqual(list(request.POST.items()), list(data.items()))
 
+    def test_request_POST_with_files(self):
+        """
+        Ensure request.POST returns no content for POST request with file content.
+        """
+        upload = SimpleUploadedFile("file.txt", b"file_content")
+        request = Request(factory.post('/', {'upload': upload}))
+        request.parsers = (FormParser(), MultiPartParser())
+        self.assertEqual(list(request.POST.keys()), [])
+        self.assertEqual(list(request.FILES.keys()), ['upload'])
+
     def test_standard_behaviour_determines_form_content_PUT(self):
         """
         Ensure request.data returns content for PUT request with form content.
@@ -113,9 +125,8 @@ urlpatterns = [
 ]
 
 
+@override_settings(ROOT_URLCONF='tests.test_request')
 class TestContentParsingWithAuthentication(TestCase):
-    urls = 'tests.test_request'
-
     def setUp(self):
         self.csrf_client = APIClient(enforce_csrf_checks=True)
         self.username = 'john'
@@ -159,9 +170,9 @@ class TestUserSetter(TestCase):
 
     def test_user_can_logout(self):
         self.request.user = self.user
-        self.assertFalse(self.request.user.is_anonymous())
+        self.assertFalse(is_anonymous(self.request.user))
         logout(self.request)
-        self.assertTrue(self.request.user.is_anonymous())
+        self.assertTrue(is_anonymous(self.request.user))
 
     def test_logged_in_user_is_set_on_wrapped_request(self):
         login(self.request, self.user)
